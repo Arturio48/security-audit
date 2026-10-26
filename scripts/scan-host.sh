@@ -90,7 +90,7 @@ for f in $envfile; do
 done
 
 echo "== 6. файлы приложения =="
-$SSH 'for d in /opt/reziume /srv/app /var/www; do [ -d "$d" ] && ls -ld "$d" && ls -la "$d" | head -12; done 2>/dev/null'
+$SSH 'for d in /opt/* /srv/app /var/www; do [ -d "$d" ] && ls -ld "$d" && ls -la "$d" | head -12; done 2>/dev/null' | sed -n '1,40p'
 $SSH 'for e in /opt/*/.env /srv/*/.env /var/www/*/.env; do [ -f "$e" ] && ls -l "$e"; done 2>/dev/null' |
   sed 's/^/       /' || true
 if $SSH 'ls /opt/*/.env >/dev/null 2>&1'; then

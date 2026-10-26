@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# audit:ignore-file  (в файле лежит таблица сигнатур: он же их и матчит)
 """Read-only security pass over a repository: dependencies, secrets, sinks.
 
 Usage:
@@ -127,6 +128,8 @@ def scan_sinks(root: Path) -> list[dict]:
         try:
             text = path.read_text(encoding="utf-8", errors="ignore")
         except OSError:
+            continue
+        if "audit:ignore-file" in text:
             continue
         for name_rx, rx, sev, why in SINK_PATTERNS:
             key = (name_rx, str(path))
