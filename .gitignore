@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 security-report.md
 .audit-req.txt
+RESUME.md
