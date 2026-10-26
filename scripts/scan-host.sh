@@ -91,11 +91,14 @@ done
 
 echo "== 6. файлы приложения =="
 $SSH 'for d in /opt/* /srv/app /var/www; do [ -d "$d" ] && ls -ld "$d" && ls -la "$d" | head -12; done 2>/dev/null' | sed -n '1,40p'
-$SSH 'for e in /opt/*/.env /srv/*/.env /var/www/*/.env; do [ -f "$e" ] && ls -l "$e"; done 2>/dev/null' |
-  sed 's/^/       /' || true
-if $SSH 'ls /opt/*/.env >/dev/null 2>&1'; then
-  bad "в каталоге приложения лежит .env — секреты дублируются вне EnvironmentFile"
-fi
+$SSH 'for e in /opt/*/.env /srv/*/.env /var/www/*/.env; do [ -f "$e" ] || continue; m=$(stat -c "%a" "$e" 2>/dev/null); case "$m" in 600|400) echo "info|$e права $m — читает только владелец, допустимо для env_file приложения";; *) echo "FAIL|$e права $m — секреты доступны другим пользователям хоста";; esac; done 2>/dev/null' |
+  while IFS="|" read -r level rest; do
+    [ -z "$level" ] && continue
+    case "$level" in
+      FAIL) bad "$rest" ;;
+      info) note "$rest" ;;
+    esac
+  done
 
 echo "== 7. каталог загрузок =="
 $SSH 'findmnt -no TARGET,OPTIONS /var/lib 2>/dev/null; for m in /opt/*/media /srv/*/media; do [ -d "$m" ] && findmnt -no TARGET,OPTIONS --target "$m" 2>/dev/null; done' | sed -n '1,6p'
